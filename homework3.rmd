@@ -1,0 +1,95 @@
+---
+title: "Homework 3 Company Design Analysis"
+author: "Mason Reed"
+date: "2025-10-01"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(colorfindr)
+customer_sales = read.csv('homework3_data.csv')
+```
+
+
+"The finance people at the company decided that they would only commit to the full redesign if the data showed that the redesign would lead to an average increase in sales of at least $1.80 per customer."
+
+1. 
+My recommendation to the company would be to go ahead with the redesign as analysis on the past redesign seems to support that a new design would increase sales per customer by at least $1.80, with the past redesign having an estimated increase of 3.66 in sale value per customer. The distribution of sale value per customer in the new design seems to be centered at a higher average sale value as well, seen in the boxplot and histogram. The boxplot displays this difference better, although the histogram shows the right shift in the distribution of sale value as well. It's possible that the data suggests that a redesign would increase sales despite the redesign actualy not increasing sales, with possible reasons being confounding variables between the new design and old design, impactful differences in the new redesign and past redesign, and poor data on the customer sales.
+
+
+To investigate whether or not a redesign will have an expected average increase in sales of at least $1.80 we can compare the distribution of sales per customer, as well as compare means and run a hypothesis/regression test to see if there is a significant difference between the effect of the design sales value per customer.
+
+
+```{r}
+# Separating Old And New Design Sales Data
+sales_design_old = filter(customer_sales, design == 0)
+sales_design_new = filter(customer_sales, design == 1)
+
+```
+
+2. & 3. : Visualizations With Citadel Colors
+```{r}
+citadel_colordat = get_colors('citadelwebpage.png')
+citadel_palette = make_palette(citadel_colordat[1:100,])
+
+ggplot() + geom_histogram(data = sales_design_new, aes(x = sales), 
+                 fill = "#19345F", bins = 25) +   
+  labs(title = "New Design Sale Value Per Customer",
+       x = "Sale Value($)",
+       y = "Count") +
+  theme_minimal()
+
+ggplot() + geom_histogram(data = sales_design_old, aes(x = sales), 
+                 fill = "#5B74AA", bins = 25) +
+  labs(title = "Old Design Sale Value Per Customer",
+       x = "Sale Value($)",
+       y = "Count") +
+  theme_minimal()
+
+
+ggplot(customer_sales, aes(x = factor(design), y = sales, fill = factor(design))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("0" = "#285195", "1" = "#19345F")) +
+  scale_x_discrete(labels = c("0" = "Old", "1" = "New")) +
+  labs(title = "Sale Value Per Customer",
+       x = "Design",
+       y = "Sale Values") +
+  theme_minimal() + theme(legend.position = 'none')
+
+
+
+
+```
+
+2. Looking At Mean NPS And Regression Based Off Design
+```{r}
+design_lm = lm(sales ~ design, data = customer_sales)
+
+summary(design_lm)
+nps_design1mean = mean(sales_design_new$nps)
+design2_npsmean = mean(sales_design_old$nps)
+```
+The mean nps score for the new design is `r round(nps_design1mean,3)` which is greater than the old nps score of `r round(design2_npsmean,3)`.
+
+The new design seems to increase sale value per customer by $3.66 based off the regression on sale value by design. It has low p-value as well which suggests there is enough data to support the difference between the new design sales and old design sales.
+
+This estimated $3.66 increase from the new design is greater than the \$ 1.80 the company wants to see, which supports the redesign.
+
+
+4. Alternative Statement / Possible Faults
+
+Although the regression and distribution plots suggest that the redesign increased sales, there is not a true 100% certainty that the redesign actually increased sales or that the new redesign would increase sales. The suggested $3.66 increase could be a result of other factors that happened when the old design existed that didn't when the new design was implemented. If the old design was in a period where the economy was in a recession and the new design was in a standard or healthier market this could affect consumers ability to spend. Pricing changes between the time the new and old design were implemented could increase sale values as well. General growth and awareness of the company from other marketing could increase sales.
+
+
+
+
+
+
